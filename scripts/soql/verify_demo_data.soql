@@ -1,0 +1,8 @@
+// Query Demo Contacts
+SELECT Id, FirstName, LastName, Email, Account.Name FROM Contact WHERE Email IN ('anaid.ramirez@test.com', 'edgar.merlo@test.com', 'guest.shopper@test.com')
+
+// Query Shared Policies
+SELECT Id, Name, Customer__r.Name, Customer__r.Email, Policy_Type__c, Status__c, Coverage_Summary__c FROM Insurance_Policy__c WHERE Customer__r.Email IN ('anaid.ramirez@test.com', 'edgar.merlo@test.com')
+
+// Query Purchases breakdown by Customer and Category
+SELECT Customer__r.Name, Category__c, Item_Name__c, Amount__c FROM Purchase__c WHERE Customer__r.Email IN ('anaid.ramirez@test.com', 'edgar.merlo@test.com', 'guest.shopper@test.com') ORDER BY Customer__r.Name, Category__c
