@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+</head>
+<body class="bg-transparent text-[var(--foreground)] antialiased p-2">
+  <div class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl p-5 shadow-lg max-w-2xl mx-auto space-y-4">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-lg font-bold">
+          📊
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-[var(--foreground)]">Executive Retail & Insurance Strategy</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Salesforce Headless 360 • Agentforce AI Live Grounding</p>
+        </div>
+      </div>
+      <div class="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 text-xs font-semibold rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+        <span id="agent-pulse" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span id="agent-badge-text">🟢 Agentforce AI Grounded</span>
+      </div>
+    </div>
+
+    <!-- AI Grounded Leading Category Banner -->
+    <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="text-base">🛡️</span>
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-red-400 font-bold">Uncovered Leading Category</p>
+          <p id="top-category-name" class="text-lg font-black text-red-400">Technology</p>
+        </div>
+      </div>
+      <span class="px-2.5 py-1 bg-red-500/20 text-red-400 text-xs font-semibold rounded-full border border-red-500/30">
+        Active Coverage Gap
+      </span>
+    </div>
+
+    <!-- Verbatim Strategic Analysis from Salesforce Agentforce -->
+    <div class="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-2">
+      <h4 class="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+        <span>💡</span> Strategic Recommendation from Agentforce
+      </h4>
+      <p id="strategic-body" class="text-xs text-[var(--muted-foreground)] mt-1 whitespace-pre-line leading-relaxed">Here is an analysis of your cardholder retail purchases and insurance policy coverage:
+
+Total store sales volume: $20,993
+Total orders: 22
+Top-performing category: Technology, with $20,498 in revenue
+
+Coverage gap: The Technology category, which is your highest-revenue segment, currently lacks active insurance protection. This means a significant portion of your customers’ purchases are unprotected, leaving both your business and your cardholders exposed to potential risks.
+
+Strategic recommendation: To address this unprotected revenue gap, consider introducing a tailored warranty or insurance partnership specifically for Technology purchases. Providing coverage for this high-demand category will help drive additional revenue, enhance customer trust, and increase cardholder loyalty.
+
+Would you like more details on potential policy options or partnership models for Technology category coverage?</p>
+      <p id="prompt-context" class="text-[10px] text-[var(--muted-foreground)]/60 italic mt-2 border-t border-blue-500/10 pt-2">Prompt grounded: "As a retail insurance assistant, analyze our cardholder retail purchases and insurance policy trends. How does our current policy coverage compare with customer purchase categories, and what insurance protection is uncovered?"</p>
+    </div>
+
+    <!-- Action Footer -->
+    <div class="pt-1 flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+      <span>Agent: <strong>Retail_Insurance_Helper</strong></span>
+      <button 
+        id="approveBtn"
+        onclick="initiateStrategy()" 
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors cursor-pointer text-xs flex items-center gap-1.5"
+      >
+        <span>🤝</span> <span id="approveBtnText">Start working in insurance Technology initiative</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script id="dynamic-state-script">
+    let currentCategory = 'Technology';
+
+    function initiateStrategy() {
+      const btn = document.getElementById('approveBtn');
+      const label = currentCategory ? `${currentCategory} protection` : 'insurance';
+      btn.innerHTML = `<span>✅</span> Strategy conversation for ${label} initiated in CRM`;
+      btn.className = 'px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg text-xs cursor-default';
+    }
+  </script>
+</body>
+</html>
