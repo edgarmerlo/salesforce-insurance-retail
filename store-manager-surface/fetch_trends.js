@@ -25,13 +25,120 @@ const DEFAULT_PROMPT =
   'As a retail insurance assistant, analyze our cardholder retail purchases and insurance policy trends. How does our current policy coverage compare with customer purchase categories, and what insurance protection is uncovered?';
 
 /**
- * Safely replaces the inner HTML of any element matching the given ID.
- * Uses a replacer function to prevent literal '$' characters in currency figures (e.g. $20,993)
- * from being mistakenly parsed as regex capture group tokens ($1, $2) by JavaScript String.prototype.replace.
+ * Escapes HTML characters to prevent XSS or broken tag structures.
  */
-function updateElementContentById(html, id, newInnerContent) {
-  const regex = new RegExp(`(<[^>]+id=["']${id}["'][^>]*>)[\\s\\S]*?(<\\/[^>]+>)`, 'i');
-  return html.replace(regex, (match, openTag, closeTag) => `${openTag}${newInnerContent}${closeTag}`);
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Escapes characters for embedding safely inside single-quoted JavaScript strings.
+ */
+function escapeJs(str) {
+  if (!str) return '';
+  return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+/**
+ * Generates the complete, self-contained executive dashboard HTML document purely from data.
+ * Does NOT require any template file to exist on disk.
+ * @param {Object} result - Grounded data object from Agentforce or fallback snapshot
+ * @returns {string} Fully rendered HTML string
+ */
+function generateDashboardHtml(result) {
+  const isLive = Boolean(result.isLive);
+  const pulseClass = isLive 
+    ? 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse' 
+    : 'w-2 h-2 rounded-full bg-amber-500';
+  const badgeText = isLive 
+    ? '🟢 Agentforce AI Grounded' 
+    : '🟡 Verified Offline Snapshot';
+  const category = escapeHtml(result.topCategory || 'Retail Category');
+  const bodyText = escapeHtml(result.aiAnalysis || 'Awaiting live Agentforce AI reasoning...');
+  const promptContext = result.prompt ? `Prompt grounded: "${escapeHtml(result.prompt)}"` : '';
+  const jsCategory = escapeJs(result.topCategory || '');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+</head>
+<body class="bg-transparent text-[var(--foreground)] antialiased p-2">
+  <div class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl p-5 shadow-lg max-w-2xl mx-auto space-y-4">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-lg font-bold">
+          📊
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-[var(--foreground)]">Executive Retail & Insurance Strategy</h2>
+          <p class="text-xs text-[var(--muted-foreground)]">Salesforce Headless 360 • Agentforce AI Live Grounding</p>
+        </div>
+      </div>
+      <div class="px-2.5 py-1 bg-emerald-500/10 text-emerald-500 text-xs font-semibold rounded-full border border-emerald-500/20 flex items-center gap-1.5">
+        <span id="agent-pulse" class="${pulseClass}"></span>
+        <span id="agent-badge-text">${badgeText}</span>
+      </div>
+    </div>
+
+    <!-- AI Grounded Leading Category Banner -->
+    <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="text-base">🛡️</span>
+        <div>
+          <p class="text-[11px] uppercase tracking-wider text-red-400 font-bold">Uncovered Leading Category</p>
+          <p id="top-category-name" class="text-lg font-black text-red-400">${category}</p>
+        </div>
+      </div>
+      <span class="px-2.5 py-1 bg-red-500/20 text-red-400 text-xs font-semibold rounded-full border border-red-500/30">
+        Active Coverage Gap
+      </span>
+    </div>
+
+    <!-- Verbatim Strategic Analysis from Salesforce Agentforce -->
+    <div class="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 space-y-2">
+      <h4 class="text-xs font-bold text-blue-400 flex items-center gap-1.5">
+        <span>💡</span> Strategic Recommendation from Agentforce
+      </h4>
+      <p id="strategic-body" class="text-xs text-[var(--muted-foreground)] mt-1 whitespace-pre-line leading-relaxed">${bodyText}</p>
+      ${promptContext ? `<p id="prompt-context" class="text-[10px] text-[var(--muted-foreground)]/60 italic mt-2 border-t border-blue-500/10 pt-2">${promptContext}</p>` : ''}
+    </div>
+
+    <!-- Action Footer -->
+    <div class="pt-1 flex items-center justify-between text-xs text-[var(--muted-foreground)]">
+      <span>Agent: <strong>Retail_Insurance_Helper</strong></span>
+      <button 
+        id="approveBtn"
+        onclick="initiateStrategy()" 
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors cursor-pointer text-xs flex items-center gap-1.5"
+      >
+        <span>🤝</span> <span id="approveBtnText">Start working in insurance ${category} initiative</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script id="dynamic-state-script">
+    let currentCategory = '${jsCategory}';
+
+    function initiateStrategy() {
+      const btn = document.getElementById('approveBtn');
+      const label = currentCategory ? \`\${currentCategory} protection\` : 'insurance';
+      btn.innerHTML = '<span>✅</span> Strategy conversation for ' + label + ' initiated in CRM';
+      btn.className = 'px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg text-xs cursor-default';
+    }
+  </script>
+</body>
+</html>`;
 }
 
 /**
@@ -39,8 +146,21 @@ function updateElementContentById(html, id, newInnerContent) {
  * Extracts and surfaces ONLY what the AI agent returns in real time, with zero hardcoded metrics or categories.
  * @param {string} prompt - Prompt sent to the agent
  * @param {number} timeoutMs - Timeout in milliseconds
+ * @param {boolean} forceFallback - Whether to directly use the offline snapshot
  */
-async function queryAgentforceStoreTrends(prompt = DEFAULT_PROMPT, timeoutMs = 20000) {
+async function queryAgentforceStoreTrends(prompt = DEFAULT_PROMPT, timeoutMs = 20000, forceFallback = false) {
+  if (forceFallback) {
+    console.log('🟡 [OFFLINE FALLBACK ACTIVATED] Forced offline fallback via --fallback flag.');
+    const fallbackPath = path.join(__dirname, 'fallback_trends.json');
+    const fallback = JSON.parse(fs.readFileSync(fallbackPath, 'utf8'));
+    return {
+      prompt: prompt || DEFAULT_PROMPT,
+      aiAnalysis: fallback.coverageAnalysis,
+      topCategory: fallback.topCategory,
+      isLive: false
+    };
+  }
+
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -135,66 +255,36 @@ async function queryAgentforceStoreTrends(prompt = DEFAULT_PROMPT, timeoutMs = 2
 }
 
 /**
- * Dynamically synchronizes the interactive HTML widget with the Agentforce AI output.
- * Renders only data returned by Salesforce AI.
+ * Dynamically generates and writes the interactive HTML dashboard.
+ * Purely data-driven: does not require any HTML template file to pre-exist.
  * @param {string} prompt - Custom prompt for the Agent (optional)
  * @param {string} targetArtifactDir - Optional Antigravity artifact directory
+ * @param {boolean} forceFallback - Whether to use verified offline snapshot directly
  */
-async function syncDashboardWithAgentforce(prompt, targetArtifactDir) {
-  const result = await queryAgentforceStoreTrends(prompt);
+async function syncDashboardWithAgentforce(prompt, targetArtifactDir, forceFallback = false) {
+  const result = await queryAgentforceStoreTrends(prompt, 20000, forceFallback);
+
+  // Generate complete HTML dynamically from scratch
+  const html = generateDashboardHtml(result);
+
+  // Write directly to local surface directory
   const htmlPath = path.join(__dirname, 'manager_dashboard.html');
-
-  if (!fs.existsSync(htmlPath)) {
-    console.error(`❌ HTML Dashboard not found at ${htmlPath}`);
-    return;
-  }
-
-  let html = fs.readFileSync(htmlPath, 'utf8');
-
-  // 1. Connection Status Badge (Live vs. Offline Fallback)
-  if (result.isLive) {
-    html = updateElementContentById(html, 'agent-pulse', '');
-    html = html.replace(/id="agent-pulse"[^>]*class="[^"]*"/, 'id="agent-pulse" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"');
-    html = updateElementContentById(html, 'agent-badge-text', '🟢 Agentforce AI Grounded');
-  } else {
-    html = updateElementContentById(html, 'agent-pulse', '');
-    html = html.replace(/id="agent-pulse"[^>]*class="[^"]*"/, 'id="agent-pulse" class="w-2 h-2 rounded-full bg-amber-500"');
-    html = updateElementContentById(html, 'agent-badge-text', '🟡 Verified Offline Snapshot');
-  }
-
-  // 2. Uncovered category dynamically extracted from Agentforce response
-  html = updateElementContentById(html, 'top-category-name', result.topCategory);
-
-  // 3. Verbatim strategic recommendation from Salesforce Agentforce
-  html = updateElementContentById(html, 'strategic-body', result.aiAnalysis);
-
-  // 4. Action button dynamically labeled with the identified category
-  const dynamicBtnText = `Start working in insurance ${result.topCategory} initiative`;
-  html = updateElementContentById(html, 'approveBtnText', dynamicBtnText);
-
-  // 5. Dynamic JavaScript variable for user interaction
-  html = html.replace(/let currentCategory = '[^']*';/, () => `let currentCategory = '${result.topCategory}';`);
-
-  // 6. Grounded prompt context display
-  const contextNote = `Prompt grounded: "${result.prompt}"`;
-  html = updateElementContentById(html, 'prompt-context', contextNote);
-
-  // Save to the local surface directory
   fs.writeFileSync(htmlPath, html, 'utf8');
-  console.log(`🖼️  [SYNC COMPLETE] manager_dashboard.html updated with ${result.isLive ? 'LIVE Agentforce AI' : 'OFFLINE Fallback'} reasoning.`);
+  console.log(`🖼️  [GENERATE COMPLETE] manager_dashboard.html dynamically created with ${result.isLive ? 'LIVE Agentforce AI' : 'OFFLINE Fallback'} reasoning.`);
 
-  // Copy to the conversation artifact directory if dynamically specified
+  // Write directly to conversation artifact directory if specified
   const resolvedArtifactDir = targetArtifactDir || process.env.ARTIFACT_DIR || process.env.ANTIGRAVITY_ARTIFACT_DIR;
   if (resolvedArtifactDir && fs.existsSync(resolvedArtifactDir)) {
     const artifactHtmlPath = path.join(resolvedArtifactDir, 'manager_dashboard.html');
     fs.writeFileSync(artifactHtmlPath, html, 'utf8');
-    console.log(`📋 Copied updated dashboard to artifact: ${artifactHtmlPath}`);
+    console.log(`📋 Copied dynamic dashboard to artifact: ${artifactHtmlPath}`);
   }
 }
 
 module.exports = {
   queryAgentforceStoreTrends,
   syncDashboardWithAgentforce,
+  generateDashboardHtml,
   DEFAULT_PROMPT
 };
 
@@ -203,10 +293,13 @@ if (require.main === module) {
   const args = process.argv.slice(2);
   let customPrompt = undefined;
   let customArtifactDir = undefined;
+  let forceFallback = false;
 
   for (const arg of args) {
     if (arg.startsWith('--artifact-dir=')) {
       customArtifactDir = arg.split('=')[1].replace(/^["']|["']$/g, '');
+    } else if (arg === '--fallback') {
+      forceFallback = true;
     } else if (!customPrompt) {
       customPrompt = arg;
     } else {
@@ -214,5 +307,5 @@ if (require.main === module) {
     }
   }
 
-  syncDashboardWithAgentforce(customPrompt || process.env.AGENTFORCE_PROMPT || undefined, customArtifactDir);
+  syncDashboardWithAgentforce(customPrompt || process.env.AGENTFORCE_PROMPT || undefined, customArtifactDir, forceFallback);
 }

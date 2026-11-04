@@ -56,3 +56,56 @@ Transform your ideas into custom Lightning apps that extend CRM workflows direct
 - [Salesforce CLI Plugin Development Guide](https://developer.salesforce.com/docs/platform/salesforce-cli-plugin/guide/conceptual-overview.html)
 - [Salesforce VS Code Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
 
+---
+
+## Retail Insurance Demo Quickstart
+
+Follow these steps to deploy metadata, seed demo data, and run the applications.
+
+### 1. Deploy Apex Classes & Salesforce Metadata
+Deploy the custom objects (`Insurance_Policy__c`, `Purchase__c`) and invocable Apex classes (`CustomerRetentionAction`, `StoreTrendsAction`):
+
+```bash
+# Deploy all force-app metadata to your authorized Salesforce org
+sf project deploy start --source-dir force-app
+
+# Run Apex tests to verify deployment and 100% test coverage
+sf apex run test -n RetailInsuranceActionsTest --synchronous --code-coverage --result-format human
+```
+
+### 2. Seed Demo Data
+Populate the demo contacts (`Anaid Ramirez`, `Edgar Merlo`, `Guest Shopper`), shared policy (`POL-CPP-2026-SHARED`), and 22 retail purchases:
+
+```bash
+# Execute the idempotent anonymous Apex seeding script
+sf apex run --file scripts/apex/seed_demo_data.apex
+
+# (Optional) Verify seeded records via SOQL
+sf data query --file scripts/soql/verify_demo_data.soql
+```
+
+### 3. Run Slack Bot (Customer Retention Copilot)
+The Slack app leverages Salesforce Agentforce (`Retail_Insurance_Helper`) in real time to formulate personalized policy retention pitches.
+
+1. Navigate to the `slack-app` directory and install dependencies:
+   ```bash
+   cd slack-app
+   npm install
+   ```
+2. Configure `slack-app/.env` with your Slack credentials and Salesforce connection:
+3. Start the bot in Socket Mode:
+   ```bash
+   npm start
+   ```
+
+### 4. Run Store Manager Surface Skill (`/insurance-trends`)
+The `/insurance-trends` skill queries Salesforce Agentforce in real time, computes category revenue trends, flags coverage gaps, and dynamically generates an interactive executive dashboard.
+
+1. Ensure `store-manager-surface/.env` is configured.
+2. **In Antigravity Chat**
+   Type the slash command directly in your chat:
+   ```text
+   /insurance-trends
+   ```
+
+

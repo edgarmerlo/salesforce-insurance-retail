@@ -43,6 +43,9 @@ $RECYCLE.BIN/
 .env
 *.env.local
 
+# Dynamically generated store manager surface artifacts
+store-manager-surface/*.html
+
 # Python Salesforce Functions
 **/__pycache__/
 **/.venv/

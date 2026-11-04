@@ -21,7 +21,7 @@ This skill queries Salesforce Agentforce (`Retail_Insurance_Helper`) in real-tim
    ```bash
    ./store-manager-surface/run.sh "$PROMPT" --artifact-dir="<appDataDir>/brain/<conversation-id>"
    ```
-   *(If `$PROMPT` is omitted, the default retail insurance analysis prompt is sent).*
+   *(If `$PROMPT` is omitted, the default retail insurance analysis prompt is sent. Add `--fallback` to explicitly force the offline verified snapshot without querying the live Agentforce endpoint).*
 
 2. **Render Inline Directly in Session (No Sidebar)**:
    - The updated dashboard is saved to `store-manager-surface/manager_dashboard.html` and automatically copied to `<appDataDir>/brain/<conversation-id>/manager_dashboard.html`.
@@ -34,5 +34,5 @@ This skill queries Salesforce Agentforce (`Retail_Insurance_Helper`) in real-tim
 
 ## Components
 - [`fetch_trends.js`](../../../store-manager-surface/fetch_trends.js): Standalone runner that queries the Salesforce Agentforce REST API (`/services/data/v68.0/actions/custom/generateAiAgentResponse/Retail_Insurance_Helper`) and safely updates the HTML dashboard.
-- [`manager_dashboard.html`](../../../store-manager-surface/manager_dashboard.html): Self-contained interactive dashboard using Tailwind CSS and semantic theme variables.
+- [`manager_dashboard.html`](../../../store-manager-surface/manager_dashboard.html): Dynamically generated interactive dashboard using Tailwind CSS and semantic theme variables.
 - [`fallback_trends.json`](../../../store-manager-surface/fallback_trends.json): Pre-grounded offline snapshot for resilient degradation.
